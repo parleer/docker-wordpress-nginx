@@ -9,8 +9,10 @@ RUN ln -sf /bin/true /sbin/initctl
 # Let the conatiner know that there is no tty
 ENV DEBIAN_FRONTEND noninteractive
 
+# According to Dockerfile Best Practies, 'apt-get update' should NOT be run on a single line and 'apt-get upgrade' should be avoided altogether.
+# However, I'm not sure yet how to do this correctly.
 RUN apt-get update
-RUN apt-get -y upgrade
+#RUN apt-get -y upgrade
 
 
 # Wordpress Requirements
@@ -44,13 +46,15 @@ ADD ./nginx-site.conf /etc/nginx/sites-available/default
 #ADD ./supervisord.conf /etc/supervisord.conf
 
 # Install Wordpress
-ADD http://wordpress.org/latest.tar.gz /usr/share/nginx/latest.tar.gz
-RUN cd /usr/share/nginx/ && tar xvf latest.tar.gz && rm latest.tar.gz
-RUN mv /usr/share/nginx/html/5* /usr/share/nginx/wordpress
-RUN rm -rf /usr/share/nginx/www
+RUN git clone --depth=1 https://github.com/WordPress/WordPress.git /app
+#ADD http://wordpress.org/latest.tar.gz /usr/share/nginx/latest.tar.gz
+#RUN cd /usr/share/nginx/ && tar xvf latest.tar.gz && rm latest.tar.gz
+#RUN mv /usr/share/nginx/html/5* /usr/share/nginx/wordpress
+#RUN rm -rf /usr/share/nginx/www
 #RUN mv /usr/share/nginx/wordpress /usr/share/nginx/www
-RUN mv /usr/share/nginx/wordpress /var/app
-RUN chown -R www-data:www-data /usr/share/nginx/www
+#RUN mv /usr/share/nginx/wordpress /var/app
+#RUN chown -R www-data:www-data /usr/share/nginx/www
+RUN chown -R www-data:www-data /var/app
 
 # Wordpress Initialization and Startup Script
 #ADD ./start.sh /start.sh
