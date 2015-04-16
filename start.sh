@@ -1,8 +1,5 @@
 #!/bin/bash
-if [ ! -f /usr/share/nginx/www/wp-config.php ]; then
-  #mysql has to be started this way as it doesn't work to call from /etc/init.d
-  /usr/bin/mysqld_safe & 
-  sleep 10s
+if [ ! -f /var/app/wp-config.php ]; then
   # Here we generate random passwords (thank you pwgen!). The first two are for mysql users, the last batch for random keys in wp-config.php
   WORDPRESS_DB="wordpress"
   MYSQL_PASSWORD=`pwgen -c -n -1 12`
@@ -23,15 +20,15 @@ if [ ! -f /usr/share/nginx/www/wp-config.php ]; then
   /'AUTH_SALT'/s/put your unique phrase here/`pwgen -c -n -1 65`/
   /'SECURE_AUTH_SALT'/s/put your unique phrase here/`pwgen -c -n -1 65`/
   /'LOGGED_IN_SALT'/s/put your unique phrase here/`pwgen -c -n -1 65`/
-  /'NONCE_SALT'/s/put your unique phrase here/`pwgen -c -n -1 65`/" /usr/share/nginx/www/wp-config-sample.php > /usr/share/nginx/www/wp-config.php
+  /'NONCE_SALT'/s/put your unique phrase here/`pwgen -c -n -1 65`/" /var/app/wp-config-sample.php > /var/app/wp-config.php
 
   # Download nginx helper plugin
   curl -O `curl -i -s https://wordpress.org/plugins/nginx-helper/ | egrep -o "https://downloads.wordpress.org/plugin/[^']+"`
-  unzip -o nginx-helper.*.zip -d /usr/share/nginx/www/wp-content/plugins
-  chown -R www-data:www-data /usr/share/nginx/www/wp-content/plugins/nginx-helper
+  unzip -o nginx-helper.*.zip -d /var/app/wp-content/plugins
+  chown -R www-data:www-data /var/app/wp-content/plugins/nginx-helper
 
   # Activate nginx plugin and set up pretty permalink structure once logged in
-  cat << ENDL >> /usr/share/nginx/www/wp-config.php
+  cat << ENDL >> /var/app/wp-config.php
 \$plugins = get_option( 'active_plugins' );
 if ( count( \$plugins ) === 0 ) {
   require_once(ABSPATH .'/wp-admin/includes/plugin.php');
@@ -39,18 +36,14 @@ if ( count( \$plugins ) === 0 ) {
   \$pluginsToActivate = array( 'nginx-helper/nginx-helper.php' );
   foreach ( \$pluginsToActivate as \$plugin ) {
     if ( !in_array( \$plugin, \$plugins ) ) {
-      activate_plugin( '/usr/share/nginx/www/wp-content/plugins/' . \$plugin );
+      activate_plugin( '/var/app/wp-content/plugins/' . \$plugin );
     }
   }
 }
 ENDL
 
-  chown www-data:www-data /usr/share/nginx/www/wp-config.php
+  chown www-data:www-data /var/app/wp-config.php
 
-  mysqladmin -u root password $MYSQL_PASSWORD
-  mysql -uroot -p$MYSQL_PASSWORD -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '$MYSQL_PASSWORD' WITH GRANT OPTION; FLUSH PRIVILEGES;"
-  mysql -uroot -p$MYSQL_PASSWORD -e "CREATE DATABASE wordpress; GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'localhost' IDENTIFIED BY '$WORDPRESS_PASSWORD'; FLUSH PRIVILEGES;"
-  killall mysqld
 fi
 
 # start all the services

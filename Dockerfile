@@ -41,24 +41,18 @@ ADD ./nginx-site.conf /etc/nginx/sites-available/default
 
 
 # Supervisor Config
-#RUN /usr/bin/easy_install supervisor
-#RUN /usr/bin/easy_install supervisor-stdout
-#ADD ./supervisord.conf /etc/supervisord.conf
+RUN /usr/bin/easy_install supervisor
+RUN /usr/bin/easy_install supervisor-stdout
+ADD ./supervisord.conf /etc/supervisord.conf
 
 # Install Wordpress
-RUN git clone --depth=1 https://github.com/WordPress/WordPress.git /app
-#ADD http://wordpress.org/latest.tar.gz /usr/share/nginx/latest.tar.gz
-#RUN cd /usr/share/nginx/ && tar xvf latest.tar.gz && rm latest.tar.gz
-#RUN mv /usr/share/nginx/html/5* /usr/share/nginx/wordpress
-#RUN rm -rf /usr/share/nginx/www
-#RUN mv /usr/share/nginx/wordpress /usr/share/nginx/www
-#RUN mv /usr/share/nginx/wordpress /var/app
-#RUN chown -R www-data:www-data /usr/share/nginx/www
+RUN git clone --depth=1 https://github.com/WordPress/WordPress.git /var/app
+RUN mv /usr/share/nginx/html/5* /var/app
 RUN chown -R www-data:www-data /var/app
 
 # Wordpress Initialization and Startup Script
-#ADD ./start.sh /start.sh
-#RUN chmod 755 /start.sh
+ADD ./start-nomysql.sh /start.sh
+RUN chmod 755 /start.sh
 
 #ADD sites-enabled/ /etc/nginx/sites-enabled/
 #ADD app/ /var/app/
@@ -67,10 +61,9 @@ RUN chown -R www-data:www-data /var/app
 EXPOSE 80
 
 # volume wordpress install
-VOLUME ["/var/lib/mysql"]
-#VOLUME ["/usr/share/nginx/www"]
+#VOLUME ["/var/lib/mysql"]
 VOLUME ["/var/app"]
 
-#CMD ["/bin/bash", "/start.sh"]
-CMD ["/usr/sbin/nginx"]
+CMD ["/bin/bash", "/start.sh"]
+#CMD ["/usr/sbin/nginx"]
 
