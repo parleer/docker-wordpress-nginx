@@ -51,7 +51,7 @@ RUN mv /usr/share/nginx/html/5* /var/app
 RUN chown -R www-data:www-data /var/app
 
 # Wordpress Initialization and Startup Script
-ADD ./start-nomysql.sh /start.sh
+ADD ./start.sh /start.sh
 RUN chmod 755 /start.sh
 
 #ADD sites-enabled/ /etc/nginx/sites-enabled/
